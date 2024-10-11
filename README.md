@@ -15,4 +15,5 @@
 6. ใช้งานOpenCVเพื่อให้แสดงผลข้อมูลทั้งหมดในการสกัด
 
 # Example
-![Example Image](Screenshot 2024-10-11 144201.png)
+![Example Image](Screenshot%202024-10-11%20144201.png)
+)
