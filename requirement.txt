@@ -1,0 +1,7 @@
+OpenCV
+mediapipe
+ultralytic
+pyautogui
+torch
+torchvison
+torchaudio
