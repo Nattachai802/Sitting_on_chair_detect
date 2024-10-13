@@ -2,7 +2,7 @@ import cv2
 import mediapipe as mp
 from ultralytics import YOLO
 import pyautogui
-
+import numpy as np
 model = YOLO('yolov8n.pt') # Load model YOLOV8 for object detection task
 
 # Load media pose for making keypoint
@@ -10,6 +10,12 @@ mp_pose = mp.solutions.pose
 pose = mp_pose.Pose()
 
 screen_width, screen_height = pyautogui.size() # Get screen size by pyautogui
+
+#ฟังก์ชั่นในการตรวจวัดแสง
+def check_brightness(frame, threshold=50):
+    gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    avg_brightness = np.mean(gray_frame)
+    return avg_brightness, avg_brightness < threshold
 
 
 def resize_with_aspect_ratio(image, width=None, height=None, inter=cv2.INTER_AREA): # ปรับขนาดของรูปภาพให้ได้สัดส่วนคงเดิม
@@ -84,6 +90,12 @@ while cap.isOpened(): #เปิดลูปและทำงานเมื่
     results = model(frame)
     
     person_bboxes.clear()
+    
+    
+    avg_brightness, is_low_brightness = check_brightness(frame)
+    
+    if is_low_brightness:
+        cv2.putText(frame, f"Low brightness: {avg_brightness:.2f}", (50, 150), cv2.FONT_HERSHEY_COMPLEX, 1.0, (0, 0, 255), 2)
 
     # Loop through all detected objects
     for r in results:
@@ -113,11 +125,10 @@ while cap.isOpened(): #เปิดลูปและทำงานเมื่
                     
                     if result.pose_landmarks:
                         mp.solutions.drawing_utils.draw_landmarks(person_crop, result.pose_landmarks, mp_pose.POSE_CONNECTIONS) # หากตรวจพบ keypoints จะแสดงผล keypoints เหล่านั้นบนเฟรมโดยใช้ draw_landmarks
-                    
-                    if is_full_body(result.pose_landmarks): #นำpose_landmarksที่เจอส่งเข้าไปในฟังก์ชั่นis_full_body
-                        cv2.putText(frame, "Person is detected (Full Body)", (50, 100), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0, 255, 255), 2)
-                    else:
-                        cv2.putText(frame, "Person is detected (Half Body)", (50, 100), cv2.FONT_HERSHEY_COMPLEX, 1.5, (255, 0, 255), 2)
+                        if is_full_body(result.pose_landmarks): #นำpose_landmarksที่เจอส่งเข้าไปในฟังก์ชั่นis_full_body
+                            cv2.putText(frame, "Person is detected (Full Body)", (50, 100), cv2.FONT_HERSHEY_COMPLEX, 1.5, (0, 255, 255), 2)
+                        else:
+                            cv2.putText(frame, "Person is detected (Half Body)", (50, 100), cv2.FONT_HERSHEY_COMPLEX, 1.5, (255, 0, 255), 2)
                 
                 # Chair detection
                 if class_id == 56:
